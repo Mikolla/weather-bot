@@ -1,0 +1,8 @@
+# Конфиг с токенами и API ключами
+properties.env
+
+# Файлы IntelliJ IDEA/GoLand
+*.iml
+modules.xml
+vcs.xml
+.idea/
