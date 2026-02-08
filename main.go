@@ -92,101 +92,30 @@ func main() {
 				)
 				bot.Send(msg)
 			} else {
-				if update.Message.Text != "" {
-					lat, lon, err := parseCoordinates(update.Message.Text)
-					if err != nil {
-						msg := tgbotapi.NewMessage(
-							update.Message.Chat.ID,
-							fmt.Sprintf("Не удалось распознать координаты:\n%v\n\nОтправьте в виде: 55.7558 37.6173", err),
-						)
-						bot.Send(msg)
-						continue
-					}
-					weather, we := getWeather(lat, lon)
-					if we != nil {
-						msg := tgbotapi.NewMessage(update.Message.Chat.ID, weather)
-						bot.Send(msg)
-						continue
-					}
-
-					// Используем координаты
+				lat, lon, err := parseCoordinates(update.Message.Text)
+				if err != nil {
 					msg := tgbotapi.NewMessage(
 						update.Message.Chat.ID,
-						weather,
+						fmt.Sprintf("Не удалось распознать координаты:\n%v\n\nОтправьте в виде: 55.7558 37.6173", err),
 					)
 					bot.Send(msg)
-				} else {
-					msg := tgbotapi.NewMessage(
-						update.Message.Chat.ID,
-						"Геолокация не распознана, отправьте геолокацию или координаты в виде 55.7558 37.6173 или нажмите на скрепку",
-					)
-					bot.Send(msg)
+					continue
 				}
-			}
+				weather, err := getWeather(lat, lon)
+				if err != nil {
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, weather)
+					bot.Send(msg)
+					continue
+				}
 
+				msg := tgbotapi.NewMessage(
+					update.Message.Chat.ID,
+					weather,
+				)
+				bot.Send(msg)
+			}
 		}
 	}
-}
-
-type WeatherResponse struct {
-	Coord struct {
-		Lon float64 `json:"lon"`
-		Lat float64 `json:"lat"`
-	} `json:"coord"`
-
-	Weather []struct {
-		ID          int    `json:"id"`
-		Main        string `json:"main"`
-		Description string `json:"description"`
-		Icon        string `json:"icon"`
-	} `json:"weather"`
-
-	Base string `json:"base"`
-
-	Main struct {
-		Temp      float64 `json:"temp"`
-		FeelsLike float64 `json:"feels_like"`
-		TempMin   float64 `json:"temp_min"`
-		TempMax   float64 `json:"temp_max"`
-		Pressure  int     `json:"pressure"`
-		Humidity  int     `json:"humidity"`
-		SeaLevel  int     `json:"sea_level"`
-		GrndLevel int     `json:"grnd_level"`
-	} `json:"main"`
-
-	Visibility int `json:"visibility"`
-
-	Wind struct {
-		Speed float64 `json:"speed"`
-		Deg   int     `json:"deg"`
-		Gust  float64 `json:"gust"`
-	} `json:"wind"`
-
-	Clouds struct {
-		All int `json:"all"`
-	} `json:"clouds"`
-
-	Dt int64 `json:"dt"`
-
-	Sys struct {
-		Type    int    `json:"type"`
-		ID      int    `json:"id"`
-		Country string `json:"country"`
-		Sunrise int64  `json:"sunrise"`
-		Sunset  int64  `json:"sunset"`
-	} `json:"sys"`
-
-	Timezone int    `json:"timezone"`
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Cod      int    `json:"cod"`
-}
-
-func main1() {
-	fmt.Println("Weather Bot запущен!")
-	weather, _ := getWeather(55.7558, 37.6173)
-	fmt.Println(weather)
-
 }
 
 func parseCoordinates(s string) (lat, lon float64, err error) {
